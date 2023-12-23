@@ -1,0 +1,32 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: distributed-system-apps
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/nhatsangvn/book-designing-distributed-systems.git
+      revision: self
+      directories:
+      - path: apps/*
+  template:
+    metadata:
+      name: 'distributed-system-{{path.basenameNormalized}}' # service-name / projectX
+    spec:
+      project: 'distributed-system' # project?
+      source:
+        repoURL: https://github.com/nhatsangvn/book-designing-distributed-systems.git
+        targetRevision: self
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'app-{{path[1]}}'
+      syncPolicy:
+        automated:
+          allowEmpty: true
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
